@@ -32,13 +32,13 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ env.NODE_VERSION }}
-    - name: npm install, build
+    - name: npm install, build to first-blood
       run: |
         # Build and test the project, then
-        # deploy to Azure Web App.
+        # deploy to first-blood.
         npm install
-        npm run build --
-    - name: 'Deploy to Azure WebApp'
+        npm run electron:build
+    - name: 'Deploy to first-blood'
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
