@@ -18,8 +18,6 @@ on:
       - master
 
 env:
-  AZURE_WEBAPP_NAME: first-blood    # set this to your application's name
-  AZURE_WEBAPP_PACKAGE_MAC_PATH: './mac'      # set this to the path to your web app project, defaults to the repository root
   NODE_VERSION: '12.16.1'                # set this to the node version to use
 
 jobs:
@@ -39,13 +37,23 @@ jobs:
       run: npm run electron:build
     - name: 查看dist文件列表
       run: ls ./dist_electron
+    - name: 创建release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
     - name: 上传Release静态资源 dmg
       uses: actions/upload-release-asset@v1
       env:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
          upload_url: ${{ steps.create_release.outputs.upload_url }}
-         asset_path: ./dist_electron/mac/${{ steps.pkg.outputs.productName }}-${{ steps.pkg.outputs.version }}.dmg
-         asset_name: ${{ steps.pkg.outputs.productName }}-${{ steps.pkg.outputs.version }}.dmg
+         asset_path: ./dist_electron/mac/first-blood-0.1.0.dmg
+         asset_name: first-blood-0.1.0.dmg
          asset_content_type: application/octet-stream
         
