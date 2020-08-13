@@ -40,7 +40,7 @@ jobs:
     - name: 查看dist文件列表
       run: ls ./dist_electron
     - name: 创建release_${{ env.PROJECT_VERSION }}
-      id: create_release_${{ env.PROJECT_VERSION }}
+      id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
