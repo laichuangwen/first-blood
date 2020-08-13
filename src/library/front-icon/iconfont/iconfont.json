@@ -1,0 +1,72 @@
+{
+  "id": "1965932",
+  "name": "我的常用图标",
+  "font_family": "iconfont",
+  "css_prefix_text": "ewen-icon",
+  "description": "我的常用图标",
+  "glyphs": [
+    {
+      "icon_id": "1240780",
+      "name": "删除",
+      "font_class": "shanchu",
+      "unicode": "e619",
+      "unicode_decimal": 58905
+    },
+    {
+      "icon_id": "5077707",
+      "name": "疑问",
+      "font_class": "yiwen",
+      "unicode": "e63f",
+      "unicode_decimal": 58943
+    },
+    {
+      "icon_id": "4736054",
+      "name": "编辑",
+      "font_class": "bianji",
+      "unicode": "e60e",
+      "unicode_decimal": 58894
+    },
+    {
+      "icon_id": "6970016",
+      "name": "工具",
+      "font_class": "gongju",
+      "unicode": "e6fa",
+      "unicode_decimal": 59130
+    },
+    {
+      "icon_id": "8423791",
+      "name": "设置",
+      "font_class": "huaban",
+      "unicode": "e60d",
+      "unicode_decimal": 58893
+    },
+    {
+      "icon_id": "1126128",
+      "name": "应用",
+      "font_class": "yingyong",
+      "unicode": "e679",
+      "unicode_decimal": 59001
+    },
+    {
+      "icon_id": "1444656",
+      "name": "git",
+      "font_class": "git",
+      "unicode": "e77f",
+      "unicode_decimal": 59263
+    },
+    {
+      "icon_id": "1471900",
+      "name": "头像",
+      "font_class": "touxiang",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    },
+    {
+      "icon_id": "3978017",
+      "name": "模板",
+      "font_class": "moban",
+      "unicode": "e623",
+      "unicode_decimal": 58915
+    }
+  ]
+}
