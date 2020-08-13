@@ -45,8 +45,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
+        tag_name: tag-${{ env.PROJECT_VERSION }}
+        release_name: release-${{ env.PROJECT_VERSION }}
         draft: false
         prerelease: false
     - name: 上传Release静态资源 dmg
