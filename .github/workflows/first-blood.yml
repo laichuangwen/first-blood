@@ -18,14 +18,16 @@ on:
       - master
 
 env:
-  NODE_VERSION: '12.16.1'                # set this to the node version to use
+  NODE_VERSION: '12.16.1'               # set this to the node version to use
+  PROJECT_NAME: 'first-blood'
+  PROJECT_VERSION: '1.0.0'
 
 jobs:
-  build-for-mac:
-    name: build-deploy-for-mac
+  release:
+    name: build-deploy
     runs-on: macos-latest
     steps:
-    - name: 拉仓库
+    - name: 拉取仓库
       uses: actions/checkout@v2
     - name: 构建node环境 Node.js ${{ env.NODE_VERSION }}
       uses: actions/setup-node@v1
@@ -34,11 +36,11 @@ jobs:
     - name: 安装依赖
       run: npm install
     - name: 打包electron
-      run: npm run electron:build
+      run: npm run electron:build-macos-win64
     - name: 查看dist文件列表
       run: ls ./dist_electron
-    - name: 创建release
-      id: create_release
+    - name: 创建release_${{ env.PROJECT_VERSION }}
+      id: create_release_${{ env.PROJECT_VERSION }}
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -53,7 +55,16 @@ jobs:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
          upload_url: ${{ steps.create_release.outputs.upload_url }}
-         asset_path: ./dist_electron/first-blood-0.1.0.dmg
-         asset_name: first-blood-0.1.0.dmg
+         asset_path: ./dist_electron/${{ env.PROJECT_NAME }}-${{ env.PROJECT_VERSION }}.dmg
+         asset_name: ${{ env.PROJECT_NAME }}-${{ env.PROJECT_VERSION }}.dmg
+         asset_content_type: application/octet-stream
+    - name: 上传Release静态资源 exe
+      uses: actions/upload-release-asset@v1
+      env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+         upload_url: ${{ steps.create_release.outputs.upload_url }}
+         asset_path: ./dist_electron/${{ env.PROJECT_NAME }}-${{ env.PROJECT_VERSION }}.exe
+         asset_name: ${{ env.PROJECT_NAME }}-${{ env.PROJECT_VERSION }}.exe
          asset_content_type: application/octet-stream
         

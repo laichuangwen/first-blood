@@ -1,6 +1,6 @@
 {
   "name": "first-blood",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "开发助手",
   "author": {
@@ -13,6 +13,7 @@
     "electron:build": "vue-cli-service electron:build",
     "electron:build-win64": "vue-cli-service electron:build --windows --x64",
     "electron:build-macos": "vue-cli-service electron:build --macos",
+    "electron:build-macos-win64": "vue-cli-service electron:build --macos --windows --x64",
     "electron:serve": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
