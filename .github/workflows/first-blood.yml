@@ -19,7 +19,7 @@ on:
 
 env:
   AZURE_WEBAPP_NAME: first-blood    # set this to your application's name
-  AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
+  AZURE_WEBAPP_PACKAGE_MAC_PATH: './mac'      # set this to the path to your web app project, defaults to the repository root
   NODE_VERSION: '12.16.1'                # set this to the node version to use
 
 jobs:
@@ -27,20 +27,25 @@ jobs:
     name: build-deploy-for-mac
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ env.NODE_VERSION }}
+    - name: 拉仓库
+      uses: actions/checkout@v2
+    - name: 构建node环境 Node.js ${{ env.NODE_VERSION }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ env.NODE_VERSION }}
-    - name: npm install, build to first-blood
-      run: |
-        # Build and test the project, then
-        # deploy to first-blood.
-        npm install
-        npm run electron:build
-    - name: 'Deploy to first-blood'
-      uses: azure/webapps-deploy@v2
+    - name: 安装依赖
+      run: npm install
+    - name: 打包electron
+      run: npm run electron:build
+    - name: 查看dist文件列表
+      run: ls ./dist_electron
+    - name: 上传Release静态资源 dmg
+      uses: actions/upload-release-asset@v1
+      env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+         upload_url: ${{ steps.create_release.outputs.upload_url }}
+         asset_path: ./dist_electron/mac/${{ steps.pkg.outputs.productName }}-${{ steps.pkg.outputs.version }}.dmg
+         asset_name: ${{ steps.pkg.outputs.productName }}-${{ steps.pkg.outputs.version }}.dmg
+         asset_content_type: application/octet-stream
+        
