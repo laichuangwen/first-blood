@@ -39,7 +39,7 @@ jobs:
       run: npm run electron:build-macos-win64
     - name: 查看dist文件列表
       run: ls ./dist_electron
-    - name: 创建release_${{ env.PROJECT_VERSION }}
+    - name: 创建release
       id: create_release
       uses: actions/create-release@v1
       env:
@@ -64,7 +64,7 @@ jobs:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
          upload_url: ${{ steps.create_release.outputs.upload_url }}
-         asset_path: ./dist_electron/${{ env.PROJECT_NAME }}-${{ env.PROJECT_VERSION }}.exe
-         asset_name: ${{ env.PROJECT_NAME }}-${{ env.PROJECT_VERSION }}.exe
+         asset_path: ./dist_electron/${{ env.PROJECT_NAME }} Setup ${{ env.PROJECT_VERSION }}.exe
+         asset_name: ${{ env.PROJECT_NAME }} Setup ${{ env.PROJECT_VERSION }}.exe
          asset_content_type: application/octet-stream
         
