@@ -209,6 +209,7 @@ export default {
             if (!this.sourceBranch || !this.targetBranch) return this.$message.warning('请选择对比分支');
             this.loading = true
             const commits = await this.getDiffCommits();
+            console.log('不同commits',commits);
             const candao = await this.getCantao()
             const parseList = candao.map((item, index) => {
                 const relationCommits = commits.filter(list =>
@@ -268,11 +269,11 @@ export default {
                     num: errCommit.length,
                     isExp: false,
                     hash: `index_noRelationCommits`,
-                    disabled: true,
+                    disabled: false,
                     children: errCommit.map(commit => {
                         return {
                             ...commit,
-                            disabled: true,
+                            disabled: false,
                             isExp: true
                         }
                     })
@@ -307,15 +308,21 @@ export default {
             if (projectStats && !projectStats.length) return []
             for (let i = 0; i < projectStats.length; i++) {
                 const project = projectStats[i]
+                // const {
+                //     tasks
+                // } = await this.$ctx.apiCantao.get(`/index.php?m=project&f=task&projectID=${project.id}&status=all&param=0&orderBy=id_desc&recTotal=1&recPerPage=1000&pageID=1&t=json`)
                 const {
                     tasks
-                } = await this.$ctx.apiCantao.get(`/index.php?m=project&f=task&projectID=${project.id}&status=unclosed&param=0&orderBy=id_desc&recTotal=1&recPerPage=1000&pageID=1&t=json`)
+                } = await this.$ctx.apiCantao.get(`/index.php?m=project&f=task&projectID=${project.id}&status=all&param=0&orderBy=&recTotal=2000&recPerPage=2000&pageID=1&type=all&t=json`)
+                tasks
+                 console.log(`bugs${project.id}`,Object.keys(tasks).length);
                 // const {
                 //     tasks
                 // } = await this.$ctx.apiCantao.get(`/project-task-${project.id}-unclosed-0--1-1000-1.json`)
                 const {
                     bugs
-                } = await this.$ctx.apiCantao.get(`/index.php?m=project&f=bug&projectID=${project.id}&orderBy=status,id_desc&build=0&type=all&param=0&recTotal=114&recPerPage=1000&pageID=1&t=json`)
+                } = await this.$ctx.apiCantao.get(`/index.php?m=project&f=bug&projectID=${project.id}&orderBy=status,id_desc&build=0&type=all&param=0&recTotal=2000&recPerPage=2000&pageID=1&t=json`)
+                console.log(`bugs${project.id}`,bugs.length);
                 // const {
                 //     bugs
                 // } = await this.$ctx.apiCantao.get(`/project-bug-${project.id}-status,id_desc-0-all-0-1-1000-1.json`)
@@ -387,6 +394,9 @@ export default {
             }
             const commits = checkCommitsList.map(commit => commit.hash);
             console.log('commits', commits);
+            // 当前分支用于操作完了切换回当前
+            const curBranch = await git.getCurBranch()
+            console.log('获取当前分支',curBranch);
             const handler = async () => {
                 if (await git.cleanConfirm()) {
                     try {
@@ -455,12 +465,18 @@ export default {
                 this.$confirm('即将执行cherry-pick、push、run pipeline连贯操作，Are you ready？')
                     .then(async () => {
                         await handler()
+                        // 切换回当前
+                        console.log('切换回当前分支',curBranch);
+                        await git.checkout(curBranch)
                         // 获取列表
                         this.getTreeList()
                     })
             } else {
                 //this.loading.submit = true
                 await handler()
+                // 切换回当前
+                console.log('切换回当前分支',curBranch);
+                await git.checkout(curBranch)
                 // this.loading.submit = false
             }
         },
@@ -472,7 +488,7 @@ export default {
             }
             // 按提交时间排序，越早越前面
             commits.sort((x, y) => new Date(x.date).getTime() - new Date(y.date).getTime()).map(s => s.hash).join(' ');
-            const message = `git cherry-pick ${commits.map(commit => commit.hash).join(' ')}`
+            const message = `${commits.map(commit => commit.hash).join(' ')}`
             console.log(message);
             this.$ctx.util.copy(message)
             this.$message.success('成功复制到粘贴板');

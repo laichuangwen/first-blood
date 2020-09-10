@@ -3,13 +3,13 @@
         :visible.sync="isShow"
         width="500px">
         <template>
-            <p :class="s.tip">
+            <p :class="s.tipD">
                 1. 以下是差异commit列表，请十分确定每一个commit都是本次操作的目标
             </p>
-            <p :class="s.tip">
+            <p :class="s.tipD">
                 2. 仅修改了commit信息的提交不会被检索出来
             </p>
-            <p :class="s.tip">
+            <p :class="s.tipD">
                 3. 会自动创建一个备份分支，最后的保障
             </p>
             <el-table :data="commits"
@@ -122,6 +122,8 @@ export default {
         },
         async submit() {
             this.loading.submit = true
+            const curBranch = await git.getCurBranch()
+            console.log('获取当前分支',curBranch);
             try {
                 // 先检出一个备份分支
                 const bkBranch = `${this.branch}-${this.$ctx.util.moment().format('YYYY-MM-DD-HH-mm-ss')}`
@@ -156,10 +158,14 @@ export default {
                         bkBranch
                     ])
                 }
+                console.log('切换回当前分支',curBranch);
+                await git.checkout(curBranch)
                 this.$message.success('操作成功')
                 this.isShow = false
             } catch (e) {
                 console.log(e)
+                console.log('切换回当前分支',curBranch);
+                await git.checkout(curBranch)
             }
             this.loading.submit = false
         }
@@ -167,7 +173,7 @@ export default {
 };
 </script>
 <style lang="scss" module="s">
-.tip {
+.tipD {
   color: #80848f;
   margin-bottom: 12px;
 }

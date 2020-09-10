@@ -5,7 +5,7 @@
         <div :class="s.footer">
             <el-button type="primary"
                 @click="$emit('copy', true)">
-                复制cherry-pick指令
+                复制选中的commit
             </el-button>
             <el-tooltip
                 content="本地cherry-pick需要自己push"

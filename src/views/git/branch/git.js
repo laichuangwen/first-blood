@@ -96,6 +96,11 @@ export default function(context,rootPath) {
         }
         return true
     }
+    git.getCurBranch = async function(){
+        let data = await git.raw(['symbolic-ref','--short','-q','HEAD'])
+        // 去除换行 
+       return data.replace(/[\r\n]/g,'')
+    }
 
     cacheGit = git
     return git

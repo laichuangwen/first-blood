@@ -30,6 +30,8 @@
             </div>
             <el-button type="primary"
                 slot="reference">重置</el-button>
+            <el-button type="primary"
+                slot="reference" @click="refresh">刷新</el-button>
         </el-popover>
     </div>
 </template>
@@ -107,6 +109,9 @@ export default {
         reset() {
             this.$store.commit('setting/reset')
             this.visible = false
+        },
+        refresh(){
+            this.$store.dispatch('users/getGitlabUserInfo', this)
         },
         debugOpen(){
             remote.getCurrentWindow().webContents.openDevTools()

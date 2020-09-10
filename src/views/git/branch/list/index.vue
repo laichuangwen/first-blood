@@ -163,6 +163,8 @@ export default {
             // 暂存区要干净
             if (!await git.cleanConfirm()) return
             // 切换当前分支
+            const curBranch = await git.getCurBranch()
+            console.log('获取当前分支',curBranch);
             await git.checkout(this.branch.current)
             try {
                 // 先记录reset掉的commit
@@ -196,10 +198,14 @@ export default {
                         revokeCommits.length > 1 ? `${revokeCommits[0]}^..${revokeCommits[1]}` : revokeCommits[0]
                     ])
                 }
+                console.log('切换回当前分支',curBranch);
+                await git.checkout(curBranch)
                 this.getCommits()
                 this.$message.success('修改成功')
             } catch (e) {
                 console.error(e)
+                console.log('切换回当前分支',curBranch);
+                await git.checkout(curBranch)
             }
 
         },
@@ -210,6 +216,9 @@ export default {
             }
             this.$confirm('此操作会修改你的本地commit记录').then(async () => {
                 if (!await git.cleanConfirm()) return
+                // 切换当前分支
+                const curBranch = await git.getCurBranch()
+                console.log('获取当前分支',curBranch);
                 await git.checkout(this.branch.current)
                 const latestCommit = (await git.log([
                     '-n',
@@ -265,6 +274,8 @@ export default {
                             })
                         })
                     }
+                    console.log('切换回当前分支',curBranch);
+                    await git.checkout(curBranch)
                     this.getCommits()
                     this.$message.success('撤回成功')
                 } catch (e) {
@@ -281,6 +292,8 @@ export default {
                         message: e.toString(),
                         duration: 0
                     })
+                    console.log('切换回当前分支',curBranch);
+                    await git.checkout(curBranch)
                 }
 
             })
