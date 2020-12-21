@@ -20,7 +20,7 @@ on:
 env:
   NODE_VERSION: '12.16.1'               # set this to the node version to use
   PROJECT_NAME: 'first-blood'
-  PROJECT_VERSION: '1.0.1'
+  PROJECT_VERSION: '1.0.2'
 
 jobs:
   release:

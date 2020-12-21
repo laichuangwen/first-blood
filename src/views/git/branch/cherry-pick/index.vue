@@ -10,6 +10,18 @@
                 </el-radio-group>
             </div>
             <div v-loading="branchLoading">
+                <label style="margin-right: 12px;">迭代版本&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                <el-select v-model="version"
+                    multiple
+                    filterable
+                    placeholder="请选择"
+                    style="margin-right: 12px;">
+                    <el-option v-for="item in projectStats"
+                        :key="item.id"
+                        :label="item.name"
+                        :value="item.id">
+                    </el-option>
+                </el-select>
                 <label style="margin-right: 12px;">源分支&nbsp;&nbsp;&nbsp;&nbsp;</label>
                 <el-select v-model="sourceBranch"
                     filterable
@@ -32,6 +44,7 @@
                         :label="item.label"
                         :value="item.value" />
                 </el-select>
+
                 <el-button :disabled="!(sourceBranch&&targetBranch)"
                     @click="getTreeList">
                     查询
@@ -97,6 +110,8 @@ export default {
             loading: false,
             diffStep: '',
             treeList: [],
+            version: [],
+            projectStats: [], //版本列表
             modal: {
                 logs: false,
                 submit: false
@@ -166,6 +181,7 @@ export default {
             console.log('分支信息', this.branch)
             // 默认选择
             this.radioChange()
+            this.getProjectStats();
             this.branchLoading = false
         },
         radioChange() {
@@ -209,7 +225,7 @@ export default {
             if (!this.sourceBranch || !this.targetBranch) return this.$message.warning('请选择对比分支');
             this.loading = true
             const commits = await this.getDiffCommits();
-            console.log('不同commits',commits);
+            console.log('不同commits', commits);
             const candao = await this.getCantao()
             const parseList = candao.map((item, index) => {
                 const relationCommits = commits.filter(list =>
@@ -282,9 +298,8 @@ export default {
             this.loading = false
             console.log('treeList', this.treeList);
         },
-        //获取蝉道数据
-        async getCantao() {
-            let versionList = []
+        // 获取项目迭代,由于全获取全部迭代再查询速度太慢了所以获取需要获取迭代自己选择
+        async getProjectStats() {
             const {
                 cantaoUrl,
                 cantaoAccount,
@@ -295,7 +310,6 @@ export default {
                 this.$message.error('请设置蝉道')
                 return
             }
-
             await this.$ctx.apiCantao.get('/index.php?m=api&f=getSessionID&t=json')
             // 退出登录
             await this.$ctx.apiCantao.get('/index.php?m=user&f=logout&t=json')
@@ -305,6 +319,12 @@ export default {
             const { projectStats, pager } = await this.$ctx.apiCantao.get('/index.php?m=project&f=all&status=undone&projectID=3&orderBy=order_desc&productID=0&recTotal=3&recPerPage=500&pageID=1&t=json')
             console.log('projectStats-pager', pager);
             console.log('projectStats', projectStats);
+            this.projectStats = projectStats;
+        },
+        //获取蝉道数据
+        async getCantao() {
+            let versionList = []
+            const projectStats = this.projectStats.filter(item=>this.version.includes(item.id));
             if (projectStats && !projectStats.length) return []
             for (let i = 0; i < projectStats.length; i++) {
                 const project = projectStats[i]
@@ -315,14 +335,14 @@ export default {
                     tasks
                 } = await this.$ctx.apiCantao.get(`/index.php?m=project&f=task&projectID=${project.id}&status=all&param=0&orderBy=&recTotal=2000&recPerPage=2000&pageID=1&type=all&t=json`)
                 tasks
-                 console.log(`bugs${project.id}`,Object.keys(tasks).length);
+                console.log(`bugs${project.id}`, Object.keys(tasks).length);
                 // const {
                 //     tasks
                 // } = await this.$ctx.apiCantao.get(`/project-task-${project.id}-unclosed-0--1-1000-1.json`)
                 const {
                     bugs
                 } = await this.$ctx.apiCantao.get(`/index.php?m=project&f=bug&projectID=${project.id}&orderBy=status,id_desc&build=0&type=all&param=0&recTotal=2000&recPerPage=2000&pageID=1&t=json`)
-                console.log(`bugs${project.id}`,bugs.length);
+                console.log(`bugs${project.id}`, bugs.length);
                 // const {
                 //     bugs
                 // } = await this.$ctx.apiCantao.get(`/project-bug-${project.id}-status,id_desc-0-all-0-1-1000-1.json`)
@@ -396,7 +416,7 @@ export default {
             console.log('commits', commits);
             // 当前分支用于操作完了切换回当前
             const curBranch = await git.getCurBranch()
-            console.log('获取当前分支',curBranch);
+            console.log('获取当前分支', curBranch);
             const handler = async () => {
                 if (await git.cleanConfirm()) {
                     try {
@@ -466,7 +486,7 @@ export default {
                     .then(async () => {
                         await handler()
                         // 切换回当前
-                        console.log('切换回当前分支',curBranch);
+                        console.log('切换回当前分支', curBranch);
                         await git.checkout(curBranch)
                         // 获取列表
                         this.getTreeList()
@@ -475,7 +495,7 @@ export default {
                 //this.loading.submit = true
                 await handler()
                 // 切换回当前
-                console.log('切换回当前分支',curBranch);
+                console.log('切换回当前分支', curBranch);
                 await git.checkout(curBranch)
                 // this.loading.submit = false
             }
@@ -521,6 +541,9 @@ export default {
     top: 0;
     height: 100%;
     width: 100%;
+  }
+  .version {
+    margin-bottom: 16px;
   }
 }
 </style>
