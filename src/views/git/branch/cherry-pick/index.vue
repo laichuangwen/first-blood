@@ -5,7 +5,8 @@
                 <el-radio-group v-model="type"
                     @change="radioChange">
                     <el-radio-button label="strict">严格</el-radio-button>
-                    <el-radio-button label="remote">远程</el-radio-button>
+                    <el-radio-button label="current">通用</el-radio-button>
+                    <el-radio-button label="remote">自定义</el-radio-button>
                     <el-radio-button label="local">本地</el-radio-button>
                 </el-radio-group>
             </div>
@@ -73,7 +74,7 @@
         <cherry-pick-tree ref="tree"
             v-loading="loading"
             :data="treeList"></cherry-pick-tree>
-        <bottom-popup :maintainer="(type==='strict'||type==='remote')&&$route.query.maintainer"
+        <bottom-popup :maintainer="(type==='strict'||type==='current'||type==='remote')&&$route.query.maintainer"
             @submit="submit"
             @copy="copy"
             @cancel="$router.back()"></bottom-popup>
@@ -122,11 +123,21 @@ export default {
     computed: {
         brancheList() {
             if (!this.branch.remotes.length) return []
-            if (this.type === 'strict') return this.branch.remotes.filter(item => ['dev', 'test', 'master'].includes(item.replace('remotes/origin/', '')))
+            if (this.type === 'current') return this.branch.remotes.filter(item => ['dev','test', 'master'].includes(item.replace('remotes/origin/', '')))
+            if (this.type === 'strict') return this.branch.remotes.filter(item => ['dev', 'trial','test', 'master'].includes(item.replace('remotes/origin/', '')))
             if (this.type === 'remote') return this.branch.remotes
             return this.branch.local
         },
         sourceBranchList() {
+            if (this.type === 'current') {
+                return this.brancheList.map(item => {
+                    return {
+                        value: item,
+                        label: item,
+                        disabled: item === 'remotes/origin/master'
+                    }
+                })
+            }
             if (this.type === 'strict') {
                 return this.brancheList.map(item => {
                     return {
@@ -144,6 +155,15 @@ export default {
             })
         },
         targetBranchList() {
+            if (this.type === 'current') {
+                return this.brancheList.map(item => {
+                    return {
+                        value: item,
+                        label: item,
+                        disabled: item === 'remotes/origin/dev'
+                    }
+                })
+            }
             if (this.type === 'strict') {
                 return this.brancheList.map(item => {
                     return {
@@ -185,11 +205,16 @@ export default {
             this.branchLoading = false
         },
         radioChange() {
-            if (this.type === 'strict') {
+            if (this.type === 'current') {
+                // 通用
                 this.sourceBranch = 'remotes/origin/dev'
                 this.targetBranch = 'remotes/origin/test'
                 // 查询
                 this.getTreeList()
+            } else if (this.type === 'strict') {
+                // 严格
+                this.sourceBranch = 'remotes/origin/dev'
+                this.targetBranch = 'remotes/origin/trial'
             } else {
                 this.sourceBranch = ''
                 this.targetBranch = ''
@@ -197,7 +222,8 @@ export default {
             }
         },
         sourceBranchChange() {
-            if (this.type === 'strict') {
+            // 通用
+            if (this.type === 'current') {
                 if (this.sourceBranch === 'remotes/origin/dev') {
                     this.targetBranch = 'remotes/origin/test';
                 }
@@ -207,11 +233,41 @@ export default {
                 // 查询
                 this.getTreeList()
             }
+            // 严格
+            if (this.type === 'strict') {
+                if (this.sourceBranch === 'remotes/origin/dev') {
+                    this.targetBranch = 'remotes/origin/trial';
+                }
+                if (this.sourceBranch === 'remotes/origin/trial') {
+                    this.targetBranch = 'remotes/origin/test';
+                }
+                if (this.sourceBranch === 'remotes/origin/test') {
+                    this.targetBranch = 'remotes/origin/master';
+                }
+                // 查询
+                this.getTreeList()
+            }
+
+
         },
         targetBranchChange() {
-            if (this.type === 'strict') {
+            if (this.type === 'current') {
                 if (this.targetBranch === 'remotes/origin/test') {
                     this.sourceBranch = 'remotes/origin/dev';
+                }
+                if (this.targetBranch === 'remotes/origin/master') {
+                    this.sourceBranch = 'remotes/origin/test';
+                }
+                // 查询
+                this.getTreeList()
+            }
+            // 严格
+            if (this.type === 'strict') {
+                if (this.targetBranch === 'remotes/origin/trial') {
+                    this.sourceBranch = 'remotes/origin/dev';
+                }
+                if (this.targetBranch === 'remotes/origin/test') {
+                    this.sourceBranch = 'remotes/origin/trial';
                 }
                 if (this.targetBranch === 'remotes/origin/master') {
                     this.sourceBranch = 'remotes/origin/test';
@@ -324,7 +380,7 @@ export default {
         //获取蝉道数据
         async getCantao() {
             let versionList = []
-            const projectStats = this.projectStats.filter(item=>this.version.includes(item.id));
+            const projectStats = this.projectStats.filter(item => this.version.includes(item.id));
             if (projectStats && !projectStats.length) return []
             for (let i = 0; i < projectStats.length; i++) {
                 const project = projectStats[i]
@@ -412,8 +468,11 @@ export default {
                 this.$message.warning('请选择commit')
                 return
             }
-            const commits = checkCommitsList.map(commit => commit.hash);
-            console.log('commits', commits);
+            const commits = checkCommitsList.sort((x, y) => new Date(x.date).getTime() - new Date(y.date).getTime()).map(s => s.hash);
+            // 按提交时间排序，越早越前面
+            console.log('按提交时间排序，越早越前面commits', commits);
+
+            commits.join(' ');
             // 当前分支用于操作完了切换回当前
             const curBranch = await git.getCurBranch()
             console.log('获取当前分支', curBranch);

@@ -15,7 +15,7 @@
                 <el-button type="primary"
                     style="margin-left: 12px;"
                     @click="$router.push({name:'git.branch.cherry-pick',query:{maintainer,path:$route.query.path,branch: branch.current}})">
-                    cherry-pick
+                    发布辅助
                 </el-button>
                 <!-- mac 有问题 -->
                 <!-- <el-button v-if="!modal.cherryPick"
@@ -23,7 +23,7 @@
                     @click="$refs.batchResetModal.open(commits)">
                     批量撤回
                 </el-button> -->
-                <el-tooltip v-if="['dev', 'test', 'master', 'beta'].includes(branch.current) && gitlabUserInfo && maintainer"
+                <el-tooltip v-if="isShowPushF"
                     content="一键取消保护分支、强制push、恢复保护分支"
                     placement="bottom">
                     <el-button style="margin-left: 12px;"
@@ -32,8 +32,7 @@
                     </el-button>
                 </el-tooltip>
             </div>
-            <el-input
-                v-model="form.keyword"
+            <el-input v-model="form.keyword"
                 placeholder="commit信息 / hash / 提交人"
                 style="width: 200px;" />
         </div>
@@ -101,6 +100,12 @@ export default {
         ...mapState('users', ['gitlabUserInfo']),
         filterCommits() {
             return this.commits.filter(item => item.message.includes(this.form.keyword) || item.hash.includes(this.form.keyword) || item.author_name.includes(this.form.keyword))
+        },
+        // 是否显示强制推送
+        isShowPushF() {
+            if (!this.branch.current && this.gitlabUserInfo) return false;
+            if (['dev','trial', 'test', 'master', 'beta'].includes(this.branch.current) && !this.maintainer) return false;
+            return true;
         }
     },
     created() {
@@ -129,9 +134,23 @@ export default {
         async getProject(id) {
             try {
                 const data = await this.$ctx.apiGitlab.get(`/api/v4/projects/${id}`)
-                this.maintainer = !data.permissions.project_access || data.permissions.project_access.access_level >= 40
-                this.$store.commit('git/setMaintainer', this.maintainer)
+                console.log(data);
+                if (data && data.permissions && data.permissions.project_access && data.permissions.project_access.access_level >= 40) {
+                    this.maintainer = true
+                    console.log('maintainer权限：', this.maintainer);
+                    this.$store.commit('git/setMaintainer', this.maintainer)
+                } else if (data && data.permissions && data.permissions.group_access && data.permissions.group_access.access_level >= 40) {
+                    this.maintainer = true
+                    console.log('maintainer权限：', this.maintainer);
+                    this.$store.commit('git/setMaintainer', this.maintainer)
+                } else {
+                    this.maintainer = false
+                    console.log('maintainer权限：', this.maintainer);
+                    this.$store.commit('git/setMaintainer', this.maintainer)
+                }
+
             } catch (e) {
+                console.error(e);
                 this.$message.error('获取项目详情失败')
             }
         },
@@ -164,7 +183,7 @@ export default {
             if (!await git.cleanConfirm()) return
             // 切换当前分支
             const curBranch = await git.getCurBranch()
-            console.log('获取当前分支',curBranch);
+            console.log('获取当前分支', curBranch);
             await git.checkout(this.branch.current)
             try {
                 // 先记录reset掉的commit
@@ -198,13 +217,13 @@ export default {
                         revokeCommits.length > 1 ? `${revokeCommits[0]}^..${revokeCommits[1]}` : revokeCommits[0]
                     ])
                 }
-                console.log('切换回当前分支',curBranch);
+                console.log('切换回当前分支', curBranch);
                 await git.checkout(curBranch)
                 this.getCommits()
                 this.$message.success('修改成功')
             } catch (e) {
                 console.error(e)
-                console.log('切换回当前分支',curBranch);
+                console.log('切换回当前分支', curBranch);
                 await git.checkout(curBranch)
             }
 
@@ -218,7 +237,7 @@ export default {
                 if (!await git.cleanConfirm()) return
                 // 切换当前分支
                 const curBranch = await git.getCurBranch()
-                console.log('获取当前分支',curBranch);
+                console.log('获取当前分支', curBranch);
                 await git.checkout(this.branch.current)
                 const latestCommit = (await git.log([
                     '-n',
@@ -274,7 +293,7 @@ export default {
                             })
                         })
                     }
-                    console.log('切换回当前分支',curBranch);
+                    console.log('切换回当前分支', curBranch);
                     await git.checkout(curBranch)
                     this.getCommits()
                     this.$message.success('撤回成功')
@@ -292,7 +311,7 @@ export default {
                         message: e.toString(),
                         duration: 0
                     })
-                    console.log('切换回当前分支',curBranch);
+                    console.log('切换回当前分支', curBranch);
                     await git.checkout(curBranch)
                 }
 
