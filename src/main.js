@@ -17,6 +17,8 @@ app
   Vue.$ctx.store.registerModule(['setting'],require('./views/setting/store').default)
   // git store
   Vue.$ctx.store.registerModule(['git'],require('./views/git/store').default)
+  // yapi store
+  Vue.$ctx.store.registerModule(['yapi'],require('./views/yapi//store').default)
 })
 .task('请求处理',['初始化状态管理'], app => require('./library/front-api').default(app))
 .use(app.getAllTask())

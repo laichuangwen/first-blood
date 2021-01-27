@@ -32,6 +32,34 @@ const routers = [{
                 ]
             },
             {
+                path: 'ui',
+                name: 'ui',
+                component: require('./ui/index.vue').default,
+            },
+            {
+                path: 'yapi',
+                name: 'yapi',
+                component: require('./yapi/index.vue').default,
+                redirect: 'yapi/project',
+                children: [
+                    {
+                        path: 'project',
+                        name: 'yapi.project',
+                        component: require('./yapi/project/index.vue').default,
+                    },
+                    {
+                        path: 'interface',
+                        name: 'yapi.interface',
+                        component: require('./yapi/interface/index.vue').default,
+                    },
+                    {
+                        path: 'generate',
+                        name: 'yapi.generate',
+                        component: require('./yapi/generate/index.vue').default,
+                    },
+                ]
+            },
+            {
                 path: 'setting',
                 name: 'setting',
                 component: require('./setting/index.vue').default,

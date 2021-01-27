@@ -85,7 +85,6 @@ export default {
 .page {
   flex: 1;
   overflow: auto;
-  padding: 16px 32px 32px;
   .breadcrumb {
     margin-bottom: 32px;
   }

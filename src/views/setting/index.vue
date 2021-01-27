@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div :class="s.view">
         <setting-list :class="s.content"
             :list="list"
             @item-confirm="itemConfirm"
@@ -13,7 +13,8 @@
                 </el-tooltip>
             </template>
             <template #debug>
-                <i @click="debugOpen" :class="['ewen-iconyiwen', s.icon]"></i>
+                <i @click="debugOpen"
+                    :class="['ewen-iconyiwen', s.icon]"></i>
             </template>
         </setting-list>
         <el-popover placement="right"
@@ -31,7 +32,8 @@
             <el-button type="primary"
                 slot="reference">重置</el-button>
             <el-button type="primary"
-                slot="reference" @click="refresh">刷新</el-button>
+                slot="reference"
+                @click="refresh">刷新</el-button>
         </el-popover>
     </div>
 </template>
@@ -56,6 +58,8 @@ export default {
                 cantaoUrl,
                 cantaoAccount,
                 cantaoPassword,
+                uiUrl,
+                yapiUrl,
             } = this.$store.state.setting
             return [
                 {
@@ -91,6 +95,18 @@ export default {
                     value: cantaoPassword,
                 },
                 {
+                    id: 6,
+                    label: 'ui库链接',
+                    type: 'input',
+                    value: uiUrl,
+                },
+                {
+                    id: 7,
+                    label: 'yapi地址',
+                    type: 'input',
+                    value: yapiUrl,
+                },
+                {
                     id: 5,
                     label: '打开调试',
                     type: 'custom',
@@ -110,10 +126,10 @@ export default {
             this.$store.commit('setting/reset')
             this.visible = false
         },
-        refresh(){
+        refresh() {
             this.$store.dispatch('users/getGitlabUserInfo', this)
         },
-        debugOpen(){
+        debugOpen() {
             remote.getCurrentWindow().webContents.openDevTools()
         },
         editEvent(row) {
@@ -194,6 +210,14 @@ export default {
                     this.$store.commit('setting/setCantaoPassword', val)
                     this.loginCandao()
                     break;
+                case 6:
+                    this.$store.commit('setting/setUiUrl', val)
+                    break;
+                case 7:
+                    this.$store.commit('setting/setYapiUrl', val)
+                    // 再重创建aixos实例
+                    this.$ctx.apiYapi = require('../../library/front-api/yapi').default(this)
+                    break;
                 default:
                     break;
             }
@@ -214,5 +238,8 @@ export default {
       color: #59c993;
     }
   }
+}
+.view {
+  padding: 16px 32px 32px;
 }
 </style>

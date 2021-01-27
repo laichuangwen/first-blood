@@ -51,7 +51,23 @@ export default {
                         name: 'git',
                         path: 'git',
                     }
-                }
+                },
+                {
+                    title: '组件库',
+                    icon: 'ewen-iconyingyong',
+                    to: {
+                        name: 'ui',
+                        path: 'ui',
+                    }
+                },
+                {
+                    title: 'yapi辅助',
+                    icon: 'ewen-iconmoban',
+                    to: {
+                        name: 'yapi',
+                        path: 'yapi',
+                    }
+                },
             ]
         },
         avatar() {

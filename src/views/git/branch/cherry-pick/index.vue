@@ -123,8 +123,8 @@ export default {
     computed: {
         brancheList() {
             if (!this.branch.remotes.length) return []
-            if (this.type === 'current') return this.branch.remotes.filter(item => ['dev','test', 'master'].includes(item.replace('remotes/origin/', '')))
-            if (this.type === 'strict') return this.branch.remotes.filter(item => ['dev', 'trial','test', 'master'].includes(item.replace('remotes/origin/', '')))
+            if (this.type === 'current') return this.branch.remotes.filter(item => ['dev', 'test', 'master'].includes(item.replace('remotes/origin/', '')))
+            if (this.type === 'strict') return this.branch.remotes.filter(item => ['dev', 'trial', 'test', 'master'].includes(item.replace('remotes/origin/', '')))
             if (this.type === 'remote') return this.branch.remotes
             return this.branch.local
         },
@@ -444,9 +444,23 @@ export default {
                 `${this.sourceBranch}...${this.targetBranch}`
             ])
             console.log('res', res);
-            const { all: commits } = res
+
+            const { all: commits } = res;
             console.log('commits', commits);
-            const parseCommits = commits.map(item => {
+            // 取出时间最小值
+            const date = Math.min(...commits.map(item => new Date(item.date).getTime()));
+            console.log('date', new Date(date));
+            // 取出目标分支log 最小时间以后
+            const targetCommit = await git.log([
+                `--since=${new Date(date)}`,
+                `${this.targetBranch}`
+            ]);
+            console.log(targetCommit);
+            const filterCommit = commits.filter(item => !targetCommit.all.map(list => `${list.message}-${list.date}`).includes(`${item.message}-${item.date}`))
+            console.log('过滤,相同提交时间和相同信息的', filterCommit);
+            const gensortCommit = filterCommit.map((item, index) => ({ ...item, index: index }))
+            console.log('根据提交日志生成index,用于排序', gensortCommit);
+            const parseCommits = gensortCommit.map(item => {
                 const { message } = item
                 const tasks = message.match(/T\d+/g) || [];
                 const bugs = message.match(/B\d+/g) || [];
@@ -468,11 +482,10 @@ export default {
                 this.$message.warning('请选择commit')
                 return
             }
-            const commits = checkCommitsList.sort((x, y) => new Date(x.date).getTime() - new Date(y.date).getTime()).map(s => s.hash);
-            // 按提交时间排序，越早越前面
-            console.log('按提交时间排序，越早越前面commits', commits);
-
-            commits.join(' ');
+            
+            const commits = checkCommitsList.sort((x, y) => y.index - x.index).map(s => s.hash);
+            // 按log提交排序，越早越前面
+            console.log('按log提交排序，越早越前面commits', commits);
             // 当前分支用于操作完了切换回当前
             const curBranch = await git.getCurBranch()
             console.log('获取当前分支', curBranch);
@@ -566,7 +579,7 @@ export default {
                 return;
             }
             // 按提交时间排序，越早越前面
-            commits.sort((x, y) => new Date(x.date).getTime() - new Date(y.date).getTime()).map(s => s.hash).join(' ');
+            commits.sort((x, y) => y.index - x.index).map(s => s.hash).join(' ');
             const message = `${commits.map(commit => commit.hash).join(' ')}`
             console.log(message);
             this.$ctx.util.copy(message)
