@@ -19,14 +19,15 @@
             <el-table-column prop="title"
                 label="接口名称"
                 width="250">
-                <!-- <template slot-scope="scope">
+                <template slot-scope="scope">
                     <el-button type="text"
                         @click="$router.push({
                         name:'yapi.generate',
                         query: {
-                            ...scope.row
+                            ...scope.row,
+                            token: $route.query.token,
                         }})">{{scope.row.title}}</el-button>
-                </template> -->
+                </template>
             </el-table-column>
             <el-table-column prop="path"
                 label="path">
@@ -34,7 +35,7 @@
             <el-table-column prop="method"
                 label="method">
             </el-table-column>
-            <el-table-column fixed="right"
+            <!-- <el-table-column fixed="right"
                 label="操作"
                 width="80">
                 <template slot-scope="scope">
@@ -42,7 +43,7 @@
                         @click="generate(scope)"
                         size="small">生成</el-button>
                 </template>
-            </el-table-column>
+            </el-table-column> -->
         </el-table>
     </div>
 </template>
