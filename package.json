@@ -23,7 +23,7 @@
     "mirror": "https://npm.taobao.org/mirrors/electron/"
   },
   "dependencies": {
-    "ansi_up": "4.0.4",
+    "ansi_up": "5.0.0",
     "axios": "0.19.0",
     "bignumber.js": "9.0.0",
     "core-js": "3.6.5",
